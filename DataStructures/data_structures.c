@@ -8,6 +8,7 @@
 /* general purpose assertions for testing */
 #define assert_equal(a, b) if ((a) != (b)) {printf("assert_equal fail: line %i\n", __LINE__); exit(EXIT_FAILURE);}
 #define assert_true(a) if (!a) {printf("assert_equal fail: line %i\n", __LINE__); exit(EXIT_FAILURE);}
+#define assert_false(a) if (a) {printf("assert_equal fail: line %i\n", __LINE__); exit(EXIT_FAILURE);}
 #define assert_not_equal(a, b) if ((a) == (b)) {printf("assert_not_equal fail: line %i\n", __LINE__); exit(EXIT_FAILURE);}
 #define assert_equal_sized(a, b, size) \
 	if (strncmp((char*)(a), (char*)(b), (size))) {printf("assert_equal_sized fail: line %i\n", __LINE__); exit(EXIT_FAILURE);}
@@ -299,7 +300,7 @@ bool arraylist_remove(arraylist_t *arraylist, const void *value) {
 
 /** Delete the element at index `index` in `arraylist`. If deletion was
  * successful, then return true. If `index` is out of bounds, then return
- * false. */
+ * false and do not modify the arraylist. */
 bool arraylist_delete(arraylist_t *arraylist, int64_t index) {
 	if (index < -arraylist->len || index >= arraylist->len) return false;
 	if (index < 0) index += arraylist->len;
@@ -320,13 +321,21 @@ bool arraylist_pop(arraylist_t *arraylist, int64_t index, void *dest) {
 
 /** Remove all items from `arraylist`. */
 void arraylist_clear(arraylist_t *arraylist) {
-	free(arraylist->contents);
 	arraylist->len = 0;
 	arraylist->phys_len = ARRAYLIST_INIT_SIZE;
-	arraylist->contents = malloc(ARRAYLIST_INIT_SIZE * arraylist->elem_size);
+	arraylist->contents = realloc(arraylist->contents, ARRAYLIST_INIT_SIZE * arraylist->elem_size);
 }
 
-
+/** Return the index of the first occurence of `value` in `arraylist` using the
+ * comparison function, -1 if `value` is not in the arraylist. */
+int64_t arraylist_find(arraylist_t *arraylist, const void *value) {
+	for (int64_t i = 0; i < arraylist->len; i++) {
+		if (arraylist->cmp_func(arraylist_get(arraylist, i), value) == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
 
 /** Determine if `arraylist1` and `arraylist2` are equal, given a function `equal`
  * that determines whether two corresponding elements are equal. */
@@ -365,8 +374,7 @@ void test_arraylist(void) {
 	assert_equal(NULL, arraylist_get(int_arraylist0, 0));
 	assert_equal(NULL, arraylist_get(int_arraylist0, 1));
 	assert_equal(NULL, arraylist_get(int_arraylist0, -1));
-	arraylist_free(int_arraylist0);
-
+	
 	// arraylist_get, arraylist_set, arraylist_get_copy, arraylist_append
 	double double_values[] = { 0., 1., 2., 3., 4., 5., 6.};
 	arraylist_t *double_arraylist = arraylist_new(sizeof(double), double_compare);
@@ -418,8 +426,9 @@ void test_arraylist(void) {
 		assert_equal(1, arraylist_len(int_arraylist0));
 		arraylist_free(int_arraylist0);
 	}
+	arraylist_t *int_arraylist1;
 	for (int i = -2; i <= 0; i++) {
-		arraylist_t *int_arraylist1 = arraylist_new(sizeof(int), int_compare);
+		int_arraylist1 = arraylist_new(sizeof(int), int_compare);
 		arraylist_insert(int_arraylist1, 5, &int_values[0]);
 		arraylist_insert(int_arraylist1, i, &int_values[1]);
 		assert_equal(1, *(int*)arraylist_get(int_arraylist1, 0));
@@ -479,6 +488,21 @@ void test_arraylist(void) {
 	assert_equal(4, *(int*)arraylist_get(int_arraylist5, 4));
 	assert_equal(0, *(int*)arraylist_get(int_arraylist5, 5));
 	arraylist_free(int_arraylist5);
+
+	// arraylist_contains
+	int_arraylist0 = arraylist_new(sizeof(int), int_compare);
+	assert_false(arraylist_contains(int_arraylist0, &int_values[0]));
+	arraylist_free(int_arraylist0);
+	int_arraylist1 = arraylist_from_array(int_values, 1, sizeof(int), int_compare);
+	assert_true(arraylist_contains(int_arraylist1, &int_values[0]));
+	assert_false(arraylist_contains(int_arraylist1, &int_values[1]));
+	arraylist_free(int_arraylist1);
+	arraylist_t *int_arraylist3 = arraylist_from_array(int_values, 3, sizeof(int), int_compare);
+	assert_true(arraylist_contains(int_arraylist3, &int_values[0]));
+	assert_true(arraylist_contains(int_arraylist3, &int_values[1]));
+	assert_true(arraylist_contains(int_arraylist3, &int_values[2]));
+	assert_false(arraylist_contains(int_arraylist3, &int_values[3]));
+	arraylist_free(int_arraylist3);
 	printf("test_arraylist passed\n");
 }
 
