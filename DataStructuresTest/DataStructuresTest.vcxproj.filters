@@ -15,12 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="datastructures.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="datastructures.c">
+    <ClCompile Include="datastructurestest.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
