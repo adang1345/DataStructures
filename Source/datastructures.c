@@ -1,6 +1,5 @@
 #include "datastructures.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 /* ---------------------------- common functions ---------------------------- */
@@ -27,20 +26,30 @@ static void *xrealloc(void *ptr, size_t new_size) {
 /* -------------------------- variable size array -------------------------- */
 
 /* Growth/shrink factor for arraylist */
-#define ARRAYLIST_GROWTH_FACTOR 1.5
+#define ARRAYLIST_GROWTH_FACTOR 2
 
-/* Percent threshold below which physical length of array is shrunk by shrink factor.
-   Must be <= 1/ARRAYLIST_GROWTH_FACTOR */
-#define ARRAYLIST_SHRINK_THRESHOLD 0.3
+/* If the virtual length of the arraylist is <= the physical length of the
+   arraylist / ARRAYLIST_SHRINK_THRESHOLD, then physical length of the arraylist
+   is shrunk by ARRAYLIST_SHRINK_THRESHOLD. Must be >= ARRAYLIST_GROWTH_FACTOR. */
+#define ARRAYLIST_SHRINK_THRESHOLD 3
 
-   /* Initial physical length of array */
+#if ARRAYLIST_SHRINK_THRESHOLD < ARRAYLIST_GROWTH_FACTOR
+#error ARRAYLIST_SHRINK_THRESHOLD must be >= ARRAYLIST_GROWTH_FACTOR
+#endif
+
+/* Initial physical length of array */
 #define ARRAYLIST_INIT_LEN 5
+
+/* Pointer to item at index `index` in `arraylist`. No bounds checking is done.
+   Negative indices are not supported. */
+#define ARRAYLIST_GET_UNCHECKED(arraylist, index) \
+	((arraylist)->contents + (index) * (int64_t)(arraylist)->elem_size)
 
 arraylist_t *arraylist_new(size_t elem_size, cmp_func_t cmp_func) {
 	arraylist_t *new_arraylist = xmalloc(sizeof(arraylist_t));
 	new_arraylist->len = 0;
 	new_arraylist->elem_size = elem_size;
-	if (new_arraylist->contents = malloc(ARRAYLIST_INIT_LEN * elem_size)) {
+	if ((new_arraylist->contents = malloc(ARRAYLIST_INIT_LEN * elem_size)) != NULL) {
 		new_arraylist->phys_len = ARRAYLIST_INIT_LEN;
 	} else {
 		new_arraylist->contents = xmalloc(elem_size);
@@ -57,9 +66,9 @@ arraylist_t *arraylist_from_array(const void *array, int64_t array_len, size_t e
 	new_arraylist->len = array_len;
 	new_arraylist->phys_len = array_len;
 	new_arraylist->elem_size = elem_size;
-	new_arraylist->contents = xmalloc(array_len * elem_size);
-	memcpy(new_arraylist->contents, array, array_len * elem_size);
-	new_arraylist->end = new_arraylist->contents + array_len * elem_size;
+	new_arraylist->contents = xmalloc((size_t)array_len * elem_size);
+	memcpy(new_arraylist->contents, array, (size_t)array_len * elem_size);
+	new_arraylist->end = ARRAYLIST_GET_UNCHECKED(new_arraylist, array_len);
 	new_arraylist->cmp_func = cmp_func;
 	return new_arraylist;
 }
@@ -76,7 +85,7 @@ int64_t arraylist_len(const arraylist_t *arraylist) {
 void *arraylist_set(arraylist_t *arraylist, int64_t index, const void *value) {
 	if (index < -arraylist->len || index >= arraylist->len) return NULL;
 	if (index < 0) index += arraylist->len;
-	int8_t *elem_location = arraylist->contents + index * arraylist->elem_size;
+	int8_t *elem_location = ARRAYLIST_GET_UNCHECKED(arraylist, index);
 	memmove(elem_location, value, arraylist->elem_size);
 	return elem_location;
 }
@@ -84,7 +93,7 @@ void *arraylist_set(arraylist_t *arraylist, int64_t index, const void *value) {
 void *arraylist_get(const arraylist_t *arraylist, int64_t index) {
 	if (index < -arraylist->len || index >= arraylist->len) return NULL;
 	if (index < 0) index += arraylist->len;
-	return arraylist->contents + index * arraylist->elem_size;
+	return ARRAYLIST_GET_UNCHECKED(arraylist, index);
 }
 
 void *arraylist_get_copy(const arraylist_t *arraylist, int64_t index, void *dest) {
@@ -100,15 +109,15 @@ void *arraylist_get_copy(const arraylist_t *arraylist, int64_t index, void *dest
  * physical length by 1. */
 static void arraylist_grow(arraylist_t *arraylist) {
 	if (arraylist->phys_len != arraylist->len) return;
-	int64_t phys_len_new = max((int64_t)(ARRAYLIST_GROWTH_FACTOR * arraylist->phys_len), arraylist->phys_len + 1);
-	int8_t *contents_new = realloc(arraylist->contents, phys_len_new * arraylist->elem_size);
+	int64_t phys_len_new = MAX(ARRAYLIST_GROWTH_FACTOR * arraylist->phys_len, arraylist->phys_len + 1);
+	int8_t *contents_new = realloc(arraylist->contents, (size_t)phys_len_new * arraylist->elem_size);
 	if (contents_new) {
 		arraylist->phys_len = phys_len_new;
 		arraylist->contents = contents_new;
 	} else {
-		arraylist->contents = xrealloc(arraylist->contents, ++(arraylist->phys_len));
+		arraylist->contents = xrealloc(arraylist->contents, (size_t)(++arraylist->phys_len) * arraylist->elem_size);
 	}
-	arraylist->end = arraylist->contents + arraylist->len * arraylist->elem_size;
+	arraylist->end = ARRAYLIST_GET_UNCHECKED(arraylist, arraylist->len);
 }
 
 /** If the virtual length of `arraylist` is greater than or equal to
@@ -117,11 +126,11 @@ static void arraylist_grow(arraylist_t *arraylist) {
  * length, shrink the physical length by ARRAYLIST_GROWTH_FACTOR. Otherwise, do
  * nothing. */
 static void arraylist_shrink(arraylist_t *arraylist) {
-	if ((int64_t)(arraylist->phys_len / ARRAYLIST_GROWTH_FACTOR) >= ARRAYLIST_INIT_LEN &&
-		arraylist->len <= (int64_t)(arraylist->phys_len * ARRAYLIST_SHRINK_THRESHOLD)) {
-		arraylist->phys_len = (int64_t)(arraylist->phys_len / ARRAYLIST_GROWTH_FACTOR);
-		arraylist->contents = xrealloc(arraylist->contents, arraylist->phys_len * arraylist->elem_size);
-		arraylist->end = arraylist->contents + arraylist->len * arraylist->elem_size;
+	if (arraylist->phys_len / ARRAYLIST_GROWTH_FACTOR >= ARRAYLIST_INIT_LEN &&
+		arraylist->len <= arraylist->phys_len / ARRAYLIST_SHRINK_THRESHOLD) {
+		arraylist->phys_len = arraylist->phys_len / ARRAYLIST_GROWTH_FACTOR;
+		arraylist->contents = xrealloc(arraylist->contents, (size_t)arraylist->phys_len * arraylist->elem_size);
+		arraylist->end = ARRAYLIST_GET_UNCHECKED(arraylist, arraylist->len);
 	}
 }
 
@@ -143,10 +152,10 @@ void arraylist_insert(arraylist_t *arraylist, int64_t index, const void *value) 
 	else if (index < 0) index += arraylist->len;
 	else if (index > arraylist->len) index = arraylist->len;
 	arraylist_grow(arraylist);
-	memmove(arraylist->contents + (index + 1) * arraylist->elem_size,
-		arraylist->contents + index * arraylist->elem_size,
-		(arraylist->len - index) * arraylist->elem_size);
-	memmove(arraylist->contents + index * arraylist->elem_size, value, arraylist->elem_size);
+	memmove(ARRAYLIST_GET_UNCHECKED(arraylist, index + 1),
+		ARRAYLIST_GET_UNCHECKED(arraylist, index),
+		(size_t)(arraylist->len - index) * arraylist->elem_size);
+	memmove(ARRAYLIST_GET_UNCHECKED(arraylist, index), value, arraylist->elem_size);
 	arraylist->len++;
 	arraylist->end += arraylist->elem_size;
 }
@@ -164,7 +173,7 @@ bool arraylist_remove(arraylist_t *arraylist, const void *value) {
 	for (int8_t *current = arraylist->contents; current < arraylist->end; current += arraylist->elem_size) {
 		if (!arraylist->cmp_func(current, value)) {
 			memmove(current, current + arraylist->elem_size,
-				arraylist->end - current - arraylist->elem_size);
+				(size_t)(arraylist->end - current) - arraylist->elem_size);
 			arraylist->len--;
 			arraylist->end -= arraylist->elem_size;
 			arraylist_shrink(arraylist);
@@ -177,9 +186,9 @@ bool arraylist_remove(arraylist_t *arraylist, const void *value) {
 bool arraylist_delete(arraylist_t *arraylist, int64_t index) {
 	if (index < -arraylist->len || index >= arraylist->len) return false;
 	if (index < 0) index += arraylist->len;
-	memmove(arraylist->contents + index * arraylist->elem_size,
-		arraylist->contents + (index + 1) * arraylist->elem_size,
-		(arraylist->len - index - 1) * arraylist->elem_size);
+	memmove(ARRAYLIST_GET_UNCHECKED(arraylist, index),
+		ARRAYLIST_GET_UNCHECKED(arraylist, index + 1),
+		(size_t)(arraylist->len - index - 1) * arraylist->elem_size);
 	arraylist->len--;
 	arraylist->end -= arraylist->elem_size;
 	arraylist_shrink(arraylist);
@@ -196,7 +205,7 @@ arraylist_t *arraylist_slice(arraylist_t *arraylist, int64_t start, int64_t end)
 	if (start >= end) {
 		return arraylist_new(arraylist->elem_size, arraylist->cmp_func);
 	}
-	return arraylist_from_array(arraylist->contents + start * arraylist->elem_size,
+	return arraylist_from_array(ARRAYLIST_GET_UNCHECKED(arraylist, start),
 		end - start, arraylist->elem_size, arraylist->cmp_func);
 }
 
@@ -248,23 +257,69 @@ int64_t arraylist_count(const arraylist_t *arraylist, const void *value) {
 	return count;
 }
 
+/** Return the index of the inorder successor of `value` in the slice of
+ * `arraylist` starting at index `start` and ending just before index `end`.
+ * If all elements in the slice are less than `value`, then return the length of
+ * `arraylist`.
+ * Precondition: Elements `start` up to but not including `end` are sorted from
+ *     least to greatest.
+ * @param arraylist: the arraylist
+ * @param arraylist: index of first element in sorted slice
+ * @param end: index of first element to the right of sorted slice
+ * @param value: value for which the inorder successor is sought
+ * @return: index of inorder successor of `value` in sorted part of `arraylist`,
+ *     length of `arraylist` if one doesn't exist */
+static int64_t binary_search_right(const arraylist_t *arraylist, int64_t start, int64_t end, const void *value) {
+	while (start < end) {
+		int64_t m = start + (end - start) / 2;
+		if (arraylist->cmp_func(ARRAYLIST_GET_UNCHECKED(arraylist, m), value) <= 0) {
+			start = m + 1;
+		} else end = m;
+	}
+	return start;
+}
+
+/** Sort the elements of `arraylist` from least to greatest, starting at index
+ * `start` and ending just before index `end`.
+ * Precondition: `start` <= `end`
+ * @param arraylist: the arraylist to sort
+ * @param start: pointer to first element to sort, <= end
+ * @param end: pointer just past the last element to sort, >= start
+ * @param temp: buffer to hold temporary data during sort, must be large enough
+ *     to hold a single element */
+static void insertion_sort(const arraylist_t *arraylist, int64_t start, int64_t end, void *temp) {
+	for (int64_t current = start + 1; current < end; current++) {
+		// current is the index of the value we are pushing down to its sorted position
+		int8_t *current_value = ARRAYLIST_GET_UNCHECKED(arraylist, current);
+		int64_t insert_index = binary_search_right(arraylist, start, end, current_value);
+		if (insert_index != current) {
+			memcpy(temp, current_value, arraylist->elem_size);
+			memmove(ARRAYLIST_GET_UNCHECKED(arraylist, insert_index + 1),
+				ARRAYLIST_GET_UNCHECKED(arraylist, insert_index),
+				(size_t)end - (size_t)insert_index * arraylist->elem_size);
+			memcpy(ARRAYLIST_GET_UNCHECKED(arraylist, insert_index), temp, arraylist->elem_size);
+		}
+	}
+}
+
 void arraylist_sort(arraylist_t *arraylist) {
 	// minrun should be in the range [32,64] such that the number of minruns
 	// in the array is slightly less than or equal to a power of 2
 	int64_t minrun = arraylist->len;
 	int remainder = 0;
-	while (minrun > 64) {
-		remainder |= minrun & 1;
+	while (minrun >= 64) {
+		remainder |= (int)(minrun & 1);
 		minrun >>= 1;
 	}
 	minrun += remainder;
-	// TODO complete this function
+	
+
 }
 
 void arraylist_reverse(arraylist_t *arraylist) {
 	void *temp = xmalloc(arraylist->elem_size);
 	int8_t *a = arraylist->contents;
-	int8_t *b = arraylist->contents + (arraylist->len - 1) * arraylist->elem_size;
+	int8_t *b = ARRAYLIST_GET_UNCHECKED(arraylist, arraylist->len - 1);
 	while (a < b) {
 		memcpy(temp, a, arraylist->elem_size);
 		memcpy(a, b, arraylist->elem_size);
@@ -279,14 +334,14 @@ arraylist_t *arraylist_copy(const arraylist_t *arraylist) {
 	arraylist_t *copy = xmalloc(sizeof(arraylist_t));
 	copy->len = arraylist->len;
 	copy->elem_size = arraylist->elem_size;
-	if (copy->contents = malloc(arraylist->phys_len * arraylist->elem_size)) {
+	if ((copy->contents = malloc((size_t)arraylist->phys_len * arraylist->elem_size)) != NULL) {
 		copy->phys_len = arraylist->phys_len;
 	} else {
-		copy->phys_len = max(arraylist->len, 1);
-		copy->contents = xmalloc(copy->phys_len * arraylist->elem_size);
+		copy->phys_len = MAX(arraylist->len, 1);
+		copy->contents = xmalloc((size_t)copy->phys_len * arraylist->elem_size);
 	}
-	memcpy(copy->contents, arraylist->contents, arraylist->len * arraylist->elem_size);
-	copy->end = copy->contents + copy->len * copy->elem_size;
+	memcpy(copy->contents, arraylist->contents, (size_t)arraylist->len * arraylist->elem_size);
+	copy->end = ARRAYLIST_GET_UNCHECKED(copy, copy->len);
 	copy->cmp_func = arraylist->cmp_func;
 	return copy;
 }

@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{356F9CBB-4B03-403C-BE03-4BAD5D4DDC50}</ProjectGuid>
     <RootNamespace>DataStructures</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>datastructures</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -120,10 +120,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="datastructures.c" />
+    <ClInclude Include="..\Source\datastructures.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="datastructures.h" />
+    <ClCompile Include="..\Source\datastructures.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

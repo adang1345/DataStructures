@@ -15,12 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="datastructures.h">
+    <ClInclude Include="..\Source\datastructures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="datastructures.c">
+    <ClCompile Include="..\Source\datastructures.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
