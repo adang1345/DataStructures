@@ -80,12 +80,12 @@ void test_arraylist(void) {
 	assert_equal(1, arraylist_len(double_arraylist));
 	assert_equal(0., *(double*)arraylist_get(double_arraylist, 0));
 	assert_equal(0., *(double*)arraylist_get(double_arraylist, -1));
-	arraylist_append(double_arraylist, &double_values[1]);
-	arraylist_append(double_arraylist, &double_values[2]);
-	arraylist_append(double_arraylist, &double_values[3]);
-	arraylist_append(double_arraylist, &double_values[4]);
-	arraylist_append(double_arraylist, &double_values[5]);
-	arraylist_append(double_arraylist, &double_values[6]);
+	assert_equal(1., *(double*)arraylist_append(double_arraylist, &double_values[1]));
+	assert_equal(2., *(double*)arraylist_append(double_arraylist, &double_values[2]));
+	assert_equal(3., *(double*)arraylist_append(double_arraylist, &double_values[3]));
+	assert_equal(4., *(double*)arraylist_append(double_arraylist, &double_values[4]));
+	assert_equal(5., *(double*)arraylist_append(double_arraylist, &double_values[5]));
+	assert_equal(6., *(double*)arraylist_append(double_arraylist, &double_values[6]));
 	assert_equal(7, arraylist_len(double_arraylist));
 	assert_equal(4., *(double*)arraylist_get(double_arraylist, 4));
 	assert_equal(5., *(double*)arraylist_get(double_arraylist, 5));
@@ -358,22 +358,23 @@ void test_arraylist(void) {
 
 	// arraylist_reverse
 	int_arraylist0 = arraylist_new(sizeof(int), int_compare);
-	arraylist_reverse(int_arraylist0);
+	int int_temp;
+	arraylist_reverse(int_arraylist0, &int_temp);
 	assert_equal(NULL, arraylist_get(int_arraylist0, 0));
 	assert_equal(0, arraylist_len(int_arraylist0));
 	arraylist_free(int_arraylist0);
 	int_arraylist1 = arraylist_from_array(int_values, 1, sizeof(int), int_compare);
-	arraylist_reverse(int_arraylist1);
+	arraylist_reverse(int_arraylist1, &int_temp);
 	assert_equal(0, *(int*)arraylist_get(int_arraylist1, 0));
 	assert_equal(1, arraylist_len(int_arraylist1));
 	arraylist_free(int_arraylist1);
 	arraylist_t *int_arraylist2 = arraylist_from_array(int_values, 2, sizeof(int), int_compare);
-	arraylist_reverse(int_arraylist2);
+	arraylist_reverse(int_arraylist2, &int_temp);
 	assert_equal(1, *(int*)arraylist_get(int_arraylist2, 0));
 	assert_equal(0, *(int*)arraylist_get(int_arraylist2, 1));
 	arraylist_free(int_arraylist2);
 	int_arraylist5 = arraylist_from_array(int_values, COUNTOF(int_values), sizeof(int), int_compare);
-	arraylist_reverse(int_arraylist5);
+	arraylist_reverse(int_arraylist5, &int_temp);
 	for (int i = 0; i < 5; i++) {
 		assert_equal(4 - i, *(int*)arraylist_get(int_arraylist5, i));
 	}

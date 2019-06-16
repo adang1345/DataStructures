@@ -2,27 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-/* ---------------------------- common functions ---------------------------- */
-
-/** Same as malloc except in case of allocation failure, print an error and
- * exit. */
-static void *xmalloc(size_t size) {
-	void *buffer = malloc(size);
-	if (buffer) return buffer;
-	printf("Out of memory error\n");
-	exit(EXIT_FAILURE);
-}
-
-/** Same as realloc except in case of allocation failure, print an error and
- * exit. */
-static void *xrealloc(void *ptr, size_t new_size) {
-	void *buffer = realloc(ptr, new_size);
-	if (buffer) return buffer;
-	printf("Out of memory error\n");
-	exit(EXIT_FAILURE);
-}
-
-
 /* -------------------------- variable size array -------------------------- */
 
 /* Growth/shrink factor for arraylist */
@@ -46,15 +25,18 @@ static void *xrealloc(void *ptr, size_t new_size) {
 	((arraylist)->contents + (index) * (int64_t)(arraylist)->elem_size)
 
 arraylist_t *arraylist_new(size_t elem_size, cmp_func_t cmp_func) {
-	arraylist_t *new_arraylist = xmalloc(sizeof(arraylist_t));
-	new_arraylist->len = 0;
-	new_arraylist->elem_size = elem_size;
+	arraylist_t *new_arraylist = malloc(sizeof(arraylist_t));
+	if (!new_arraylist) return NULL;
 	if ((new_arraylist->contents = malloc(ARRAYLIST_INIT_LEN * elem_size)) != NULL) {
 		new_arraylist->phys_len = ARRAYLIST_INIT_LEN;
-	} else {
-		new_arraylist->contents = xmalloc(elem_size);
+	} else if ((new_arraylist->contents = malloc(elem_size)) != NULL) {
 		new_arraylist->phys_len = 1;
+	} else {
+		free(new_arraylist);
+		return NULL;
 	}
+	new_arraylist->len = 0;
+	new_arraylist->elem_size = elem_size;
 	new_arraylist->end = new_arraylist->contents;
 	new_arraylist->cmp_func = cmp_func;
 	return new_arraylist;
@@ -62,11 +44,15 @@ arraylist_t *arraylist_new(size_t elem_size, cmp_func_t cmp_func) {
 
 arraylist_t *arraylist_from_array(const void *array, int64_t array_len, size_t elem_size, cmp_func_t cmp_func) {
 	if (array_len == 0) return arraylist_new(elem_size, cmp_func);
-	arraylist_t *new_arraylist = xmalloc(sizeof(arraylist_t));
+	arraylist_t *new_arraylist = malloc(sizeof(arraylist_t));
+	if (!new_arraylist) return NULL;
+	if (!(new_arraylist->contents = malloc((size_t)array_len * elem_size))) {
+		free(new_arraylist);
+		return NULL;
+	}
 	new_arraylist->len = array_len;
 	new_arraylist->phys_len = array_len;
 	new_arraylist->elem_size = elem_size;
-	new_arraylist->contents = xmalloc((size_t)array_len * elem_size);
 	memcpy(new_arraylist->contents, array, (size_t)array_len * elem_size);
 	new_arraylist->end = ARRAYLIST_GET_UNCHECKED(new_arraylist, array_len);
 	new_arraylist->cmp_func = cmp_func;
@@ -98,47 +84,56 @@ void *arraylist_get(const arraylist_t *arraylist, int64_t index) {
 
 void *arraylist_get_copy(const arraylist_t *arraylist, int64_t index, void *dest) {
 	void *ptr = arraylist_get(arraylist, index);
-	if (ptr != NULL) memmove(dest, ptr, arraylist->elem_size);
+	if (ptr) memmove(dest, ptr, arraylist->elem_size);
 	return ptr;
 }
 
-/** If the virtual length of `arraylist` is equal to its physical length,
- * increase the physical length of the arraylist by a factor of
- * ARRAYLIST_GROWTH_FACTOR or by 1, whichever results in a larger array. Leave
- * the virtual length unchanged. If memory allocation fails, increase the
- * physical length by 1. */
-static void arraylist_grow(arraylist_t *arraylist) {
-	if (arraylist->phys_len != arraylist->len) return;
+/** If the virtual length of `arraylist` is not equal to its physical length,
+ * return true. If the virtual length of `arraylist` is equal to its physical
+ * length, increase the physical length of the arraylist by a factor of
+ * ARRAYLIST_GROWTH_FACTOR or by 1, whichever results in a larger array, leaving
+ * the virtual length unchanged. If memory allocation fails, try to increase the
+ * physical length by 1. On success, return true. On failure, return false. */
+static bool arraylist_grow(arraylist_t *arraylist) {
+	if (arraylist->phys_len != arraylist->len) return true;
 	int64_t phys_len_new = MAX(ARRAYLIST_GROWTH_FACTOR * arraylist->phys_len, arraylist->phys_len + 1);
 	int8_t *contents_new = realloc(arraylist->contents, (size_t)phys_len_new * arraylist->elem_size);
 	if (contents_new) {
 		arraylist->phys_len = phys_len_new;
 		arraylist->contents = contents_new;
+	} else if ((contents_new = realloc(arraylist->contents, (size_t)(++arraylist->phys_len) * arraylist->elem_size)) != NULL) {
+		arraylist->contents = contents_new;
 	} else {
-		arraylist->contents = xrealloc(arraylist->contents, (size_t)(++arraylist->phys_len) * arraylist->elem_size);
+		return false;
 	}
 	arraylist->end = ARRAYLIST_GET_UNCHECKED(arraylist, arraylist->len);
+	return true;
 }
 
 /** If the virtual length of `arraylist` is greater than or equal to
- * ARRAYLIST_INIT_LEN * ARRAYLIST_GROWTH_FACTOR and
- * is at least a factor of ARRAYLIST_GROWTH_FACTOR smaller than its physical
- * length, shrink the physical length by ARRAYLIST_GROWTH_FACTOR. Otherwise, do
- * nothing. */
+ * ARRAYLIST_INIT_LEN * ARRAYLIST_GROWTH_FACTOR and is at least a factor of
+ * ARRAYLIST_GROWTH_FACTOR smaller than its physical length, try to shrink the
+ * physical length by ARRAYLIST_GROWTH_FACTOR. Otherwise, do nothing. */
 static void arraylist_shrink(arraylist_t *arraylist) {
 	if (arraylist->phys_len / ARRAYLIST_GROWTH_FACTOR >= ARRAYLIST_INIT_LEN &&
 		arraylist->len <= arraylist->phys_len / ARRAYLIST_SHRINK_THRESHOLD) {
-		arraylist->phys_len = arraylist->phys_len / ARRAYLIST_GROWTH_FACTOR;
-		arraylist->contents = xrealloc(arraylist->contents, (size_t)arraylist->phys_len * arraylist->elem_size);
-		arraylist->end = ARRAYLIST_GET_UNCHECKED(arraylist, arraylist->len);
+		int64_t new_phys_len = arraylist->phys_len / ARRAYLIST_GROWTH_FACTOR;
+		int8_t *new_contents = realloc(arraylist->contents, (size_t)new_phys_len * arraylist->elem_size);
+		if (new_contents) {
+			arraylist->phys_len = new_phys_len;
+			arraylist->contents = new_contents;
+			arraylist->end = ARRAYLIST_GET_UNCHECKED(arraylist, arraylist->len);
+		}
 	}
 }
 
-void arraylist_append(arraylist_t *arraylist, const void *value) {
-	arraylist_grow(arraylist);
+void *arraylist_append(arraylist_t *arraylist, const void *value) {
+	if (!arraylist_grow(arraylist)) return NULL;
 	memmove(arraylist->end, value, arraylist->elem_size);
 	arraylist->len++;
+	void *old_end = arraylist->end;
 	arraylist->end += arraylist->elem_size;
+	return old_end;
 }
 
 void arraylist_extend(arraylist_t *dest, const arraylist_t *source) {
@@ -220,11 +215,12 @@ void arraylist_clear(arraylist_t *arraylist) {
 	if (contents_new) {
 		arraylist->phys_len = ARRAYLIST_INIT_LEN;
 		arraylist->contents = contents_new;
-	} else {
+		arraylist->end = arraylist->contents;
+	} else if ((contents_new = realloc(arraylist->contents, arraylist->elem_size)) != NULL) {
 		arraylist->phys_len = 1;
-		arraylist->contents = xrealloc(arraylist->contents, arraylist->elem_size);
+		arraylist->contents = contents_new;
+		arraylist->end = arraylist->contents;
 	}
-	arraylist->end = arraylist->contents;
 }
 
 int64_t arraylist_find(const arraylist_t *arraylist, const void *value) {
@@ -316,8 +312,7 @@ void arraylist_sort(arraylist_t *arraylist) {
 
 }
 
-void arraylist_reverse(arraylist_t *arraylist) {
-	void *temp = xmalloc(arraylist->elem_size);
+void arraylist_reverse(arraylist_t *arraylist, void *temp) {
 	int8_t *a = arraylist->contents;
 	int8_t *b = ARRAYLIST_GET_UNCHECKED(arraylist, arraylist->len - 1);
 	while (a < b) {
@@ -327,18 +322,20 @@ void arraylist_reverse(arraylist_t *arraylist) {
 		a += arraylist->elem_size;
 		b -= arraylist->elem_size;
 	}
-	free(temp);
 }
 
 arraylist_t *arraylist_copy(const arraylist_t *arraylist) {
-	arraylist_t *copy = xmalloc(sizeof(arraylist_t));
+	arraylist_t *copy = malloc(sizeof(arraylist_t));
+	if (!copy) return NULL;
 	copy->len = arraylist->len;
 	copy->elem_size = arraylist->elem_size;
 	if ((copy->contents = malloc((size_t)arraylist->phys_len * arraylist->elem_size)) != NULL) {
 		copy->phys_len = arraylist->phys_len;
-	} else {
+	} else if ((copy->contents = malloc((size_t)MAX(arraylist->len, 1) * arraylist->elem_size)) != NULL) {
 		copy->phys_len = MAX(arraylist->len, 1);
-		copy->contents = xmalloc((size_t)copy->phys_len * arraylist->elem_size);
+	} else {
+		free(copy);
+		return NULL;
 	}
 	memcpy(copy->contents, arraylist->contents, (size_t)arraylist->len * arraylist->elem_size);
 	copy->end = ARRAYLIST_GET_UNCHECKED(copy, copy->len);
@@ -366,7 +363,8 @@ void arraylist_foreach(arraylist_t *arraylist, void(*func)(void*)) {
 }
 
 arraylist_iter_t *arraylist_iter_new(const arraylist_t *arraylist) {
-	arraylist_iter_t *iter = xmalloc(sizeof(arraylist_iter_t));
+	arraylist_iter_t *iter = malloc(sizeof(arraylist_iter_t));
+	if (!iter) return NULL;
 	iter->arraylist = arraylist;
 	iter->next = arraylist->contents;
 	return iter;
@@ -393,7 +391,8 @@ void arraylist_iter_reset(arraylist_iter_t *iter) {
 /* -------------------------- doubly linked list -------------------------- */
 
 linkedlist_t *linkedlist_new(size_t elem_size, cmp_func_t cmp_func) {
-	linkedlist_t *linkedlist = xmalloc(sizeof(linkedlist_t));
+	linkedlist_t *linkedlist = malloc(sizeof(linkedlist_t));
+	if (!linkedlist) return NULL;
 	linkedlist->head = NULL;
 	linkedlist->tail = NULL;
 	linkedlist->value_in_node = elem_size <= NODE_VALUE_MAX_SIZE;

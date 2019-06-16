@@ -17,7 +17,7 @@
 /* -------------------------------- macros ----------------------------------*/
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define COUNTOF(arr) (sizeof(arr) / sizeof(arr[0]))
+#define COUNTOF(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 /* -------------------------- variable size array -------------------------- */
 
@@ -40,14 +40,16 @@ typedef struct {
 	int8_t *next;					// pointer to next value, = arraylist->end if we've reached the end
 } arraylist_iter_t;
 
-/** Create and return a new empty arraylist.
+/** Create and return a new empty arraylist. Return NULL if there is
+ * insufficient memory.
  * @param elem_size: size, in bytes, of each element of array.
  * @param cmp_func: comparison function
  * @return: the arraylist created */
 DS_API arraylist_t *arraylist_new(size_t elem_size, cmp_func_t cmp_func);
 
 /** Create and return a new arraylist from a given array by copying its
- * contents. If `array_len` is 0, an empty arraylist is returned.
+ * contents. If `array_len` is 0, an empty arraylist is returned. Return NULL
+ * if there is insufficient memory.
  * @param array: the given array
  * @param array_len: length of the given array, >=0
  * @param elem_size: size, in bytes, of an element of the array
@@ -89,10 +91,12 @@ DS_API void *arraylist_get(const arraylist_t *arraylist, int64_t index);
  * @return: pointer to the requested element */
 DS_API void *arraylist_get_copy(const arraylist_t *arraylist, int64_t index, void *dest);
 
-/** Append a value to the end of an arraylist by copying its contents. 
+/** Append a value to the end of an arraylist by copying its contents. Return
+ * a pointer to the new value in the arraylist, or NULL if there is insufficient
+ * memory.
  * @param arraylist: the arraylist
  * @param value: the value to append */
-DS_API void arraylist_append(arraylist_t *arraylist, const void *value);
+DS_API void *arraylist_append(arraylist_t *arraylist, const void *value);
 
 /** Extend `dest` by appending all items in `source` to the end in order.
  * `source` is unchanged.
@@ -184,10 +188,13 @@ DS_API int64_t arraylist_count(const arraylist_t *arraylist, const void *value);
 DS_API void arraylist_sort(arraylist_t *arraylist);
 
 /** Reverse the elements of `arraylist`.
- * @param arraylist: the arraylist */
-DS_API void arraylist_reverse(arraylist_t *arraylist);
+ * @param arraylist: the arraylist
+ * @param temp: a buffer large enough to hold one element, used for temporary
+ *     space during swaping operations */
+DS_API void arraylist_reverse(arraylist_t *arraylist, void *temp);
 
-/** Return a shallow copy of `arraylist`.
+/** Return a shallow copy of `arraylist`. Return NULL if there is insufficient
+ * memory.
  * @param arraylist: the arraylist
  * @return: a copy of `arraylist` */
 DS_API arraylist_t *arraylist_copy(const arraylist_t *arraylist);
@@ -210,7 +217,8 @@ DS_API int64_t arraylist_compare(const arraylist_t *arraylist1, const arraylist_
  * @param func: function to call */
 DS_API void arraylist_foreach(arraylist_t *arraylist, void(*func)(void*));
 
-/** Create and return a new arraylist iterator.
+/** Create and return a new arraylist iterator. Return NULL if there is
+ * insufficient memory.
  * @param arraylist: the arraylist
  * @return: an arraylist iterator */
 DS_API arraylist_iter_t *arraylist_iter_new(const arraylist_t *arraylist);
@@ -251,7 +259,8 @@ typedef struct {
 	cmp_func_t cmp_func;		// comparison function
 } linkedlist_t;
 
-/** Create and return a new, empty linkedlist.
+/** Create and return a new, empty linkedlist. Return NULL if there is
+ * insufficient memory.
  * @param elem_size: size, in bytes, of each element of the linkedlist
  * @param cmp_func: the comparison function
  * @return: the linkedlist created */
