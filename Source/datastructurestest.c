@@ -147,19 +147,19 @@ void test_arraylist(void) {
 
 	// arraylist_extend
 	arraylist_t *double_arraylist2 = arraylist_new(sizeof(double), double_compare);
-	arraylist_extend(double_arraylist, double_arraylist2);
+	assert_equal(arraylist_len(double_arraylist2), arraylist_extend(double_arraylist, double_arraylist2));
 	assert_equal(6., *(double*)arraylist_get(double_arraylist, -1));
 	assert_equal(7, arraylist_len(double_arraylist));
 	arraylist_free(double_arraylist2);
 	double_arraylist2 = arraylist_from_array(double_values, 1, sizeof(double), double_compare);
 	assert_equal(0., *(double*)arraylist_get(double_arraylist2, 0));
 	assert_equal(0., *(double*)arraylist_get(double_arraylist2, -1));
-	arraylist_extend(double_arraylist, double_arraylist2);
+	assert_equal(arraylist_len(double_arraylist2), arraylist_extend(double_arraylist, double_arraylist2));
 	assert_equal(8, arraylist_len(double_arraylist));
 	assert_equal(0., *(double*)arraylist_get(double_arraylist, -1));
 	arraylist_free(double_arraylist2);
 	double_arraylist2 = arraylist_from_array(double_values, 2, sizeof(double), double_compare);
-	arraylist_extend(double_arraylist, double_arraylist2);
+	assert_equal(arraylist_len(double_arraylist2), arraylist_extend(double_arraylist, double_arraylist2));
 	assert_equal(1., *(double*)arraylist_get(double_arraylist, -1));
 	assert_equal(10, arraylist_len(double_arraylist));
 	arraylist_free(double_arraylist2);
@@ -169,7 +169,7 @@ void test_arraylist(void) {
 	int int_values[] = { 0, 1, 2, 3, 4 };
 	for (int i = -2; i <= 2; i++) {
 		int_arraylist0 = arraylist_new(sizeof(int), int_compare);
-		arraylist_insert(int_arraylist0, i, &int_values[0]);
+		assert_equal(0, *(int*)arraylist_insert(int_arraylist0, i, &int_values[0]));
 		assert_equal(0, *(int*)arraylist_get(int_arraylist0, 0));
 		assert_equal(1, arraylist_len(int_arraylist0));
 		arraylist_free(int_arraylist0);
@@ -177,22 +177,22 @@ void test_arraylist(void) {
 	arraylist_t *int_arraylist1;
 	for (int i = -2; i <= 0; i++) {
 		int_arraylist1 = arraylist_new(sizeof(int), int_compare);
-		arraylist_insert(int_arraylist1, 5, &int_values[0]);
-		arraylist_insert(int_arraylist1, i, &int_values[1]);
+		assert_equal(0, *(int*)arraylist_insert(int_arraylist1, 5, &int_values[0]));
+		assert_equal(1, *(int*)arraylist_insert(int_arraylist1, i, &int_values[1]));
 		assert_equal(1, *(int*)arraylist_get(int_arraylist1, 0));
 		assert_equal(0, *(int*)arraylist_get(int_arraylist1, 1));
 		arraylist_free(int_arraylist1);
 	}
 	for (int i = 1; i <= 2; i++) {
 		arraylist_t *int_arraylist1 = arraylist_new(sizeof(int), int_compare);
-		arraylist_insert(int_arraylist1, 5, &int_values[0]);
-		arraylist_insert(int_arraylist1, i, &int_values[1]);
+		assert_equal(0, *(int*)arraylist_insert(int_arraylist1, 5, &int_values[0]));
+		assert_equal(1, *(int*)arraylist_insert(int_arraylist1, i, &int_values[1]));
 		assert_equal(0, *(int*)arraylist_get(int_arraylist1, 0));
 		assert_equal(1, *(int*)arraylist_get(int_arraylist1, 1));
 		arraylist_free(int_arraylist1);
 	}
 	arraylist_t *int_arraylist5 = arraylist_from_array(int_values, COUNTOF(int_values), sizeof(int), int_compare);
-	arraylist_insert(int_arraylist5, -2, &int_values[0]);
+	assert_equal(0, *(int*)arraylist_insert(int_arraylist5, -2, &int_values[0]));
 	assert_equal(0, *(int*)arraylist_get(int_arraylist5, 0));
 	assert_equal(1, *(int*)arraylist_get(int_arraylist5, 1));
 	assert_equal(2, *(int*)arraylist_get(int_arraylist5, 2));
@@ -201,7 +201,7 @@ void test_arraylist(void) {
 	assert_equal(4, *(int*)arraylist_get(int_arraylist5, 5));
 	arraylist_free(int_arraylist5);
 	int_arraylist5 = arraylist_from_array(int_values, COUNTOF(int_values), sizeof(int), int_compare);
-	arraylist_insert(int_arraylist5, 0, &int_values[0]);
+	assert_equal(0, *(int*)arraylist_insert(int_arraylist5, 0, &int_values[0]));
 	assert_equal(0, *(int*)arraylist_get(int_arraylist5, 0));
 	assert_equal(0, *(int*)arraylist_get(int_arraylist5, 1));
 	assert_equal(1, *(int*)arraylist_get(int_arraylist5, 2));
@@ -210,7 +210,7 @@ void test_arraylist(void) {
 	assert_equal(4, *(int*)arraylist_get(int_arraylist5, 5));
 	arraylist_free(int_arraylist5);
 	int_arraylist5 = arraylist_from_array(int_values, COUNTOF(int_values), sizeof(int), int_compare);
-	arraylist_insert(int_arraylist5, 1, &int_values[0]);
+	assert_equal(0, *(int*)arraylist_insert(int_arraylist5, 1, &int_values[0]));
 	assert_equal(0, *(int*)arraylist_get(int_arraylist5, 0));
 	assert_equal(0, *(int*)arraylist_get(int_arraylist5, 1));
 	assert_equal(1, *(int*)arraylist_get(int_arraylist5, 2));
@@ -219,7 +219,7 @@ void test_arraylist(void) {
 	assert_equal(4, *(int*)arraylist_get(int_arraylist5, 5));
 	arraylist_free(int_arraylist5);
 	int_arraylist5 = arraylist_from_array(int_values, COUNTOF(int_values), sizeof(int), int_compare);
-	arraylist_insert(int_arraylist5, 5, &int_values[0]);
+	assert_equal(0, *(int*)arraylist_insert(int_arraylist5, 5, &int_values[0]));
 	assert_equal(0, *(int*)arraylist_get(int_arraylist5, 0));
 	assert_equal(1, *(int*)arraylist_get(int_arraylist5, 1));
 	assert_equal(2, *(int*)arraylist_get(int_arraylist5, 2));
@@ -228,7 +228,7 @@ void test_arraylist(void) {
 	assert_equal(0, *(int*)arraylist_get(int_arraylist5, 5));
 	arraylist_free(int_arraylist5);
 	int_arraylist5 = arraylist_from_array(int_values, COUNTOF(int_values), sizeof(int), int_compare);
-	arraylist_insert(int_arraylist5, 6, &int_values[0]);
+	assert_equal(0, *(int*)arraylist_insert(int_arraylist5, 6, &int_values[0]));
 	assert_equal(0, *(int*)arraylist_get(int_arraylist5, 0));
 	assert_equal(1, *(int*)arraylist_get(int_arraylist5, 1));
 	assert_equal(2, *(int*)arraylist_get(int_arraylist5, 2));

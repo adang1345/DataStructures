@@ -98,20 +98,24 @@ DS_API void *arraylist_get_copy(const arraylist_t *arraylist, int64_t index, voi
  * @param value: the value to append */
 DS_API void *arraylist_append(arraylist_t *arraylist, const void *value);
 
-/** Extend `dest` by appending all items in `source` to the end in order.
- * `source` is unchanged.
+/** Extend `dest` by appending as many elements as possible at the beginning of
+ * `source` to the end of `dest`. Return the number of items actually appended.
+ * An out-of-memory situation may cause not all items to be appended. `source`
+ * is unchanged.
  * @param dest: the arraylist that receives values, must have values that are
  *   the same type as those in `source`
  * @param source: the arraylist that gives values */
-DS_API void arraylist_extend(arraylist_t *dest, const arraylist_t *source);
+DS_API int64_t arraylist_extend(arraylist_t *dest, const arraylist_t *source);
 
 /** Insert `value` into the arraylist at position `index` by copying. Negative
  * indices are supported. If the index is out of bounds, the value is inserted
- * at the beginning or the end, whichever is closer to `index`.
+ * at the beginning or the end, whichever is closer to `index`. Return a pointer
+ * to the newly inserted element in the arraylist, or NULL if there is
+ * insufficient memory.
  * @param arraylist: the arraylist
  * @param index: index to insert the value
  * @param value: value to insert */
-DS_API void arraylist_insert(arraylist_t *arraylist, int64_t index, const void *value);
+DS_API void *arraylist_insert(arraylist_t *arraylist, int64_t index, const void *value);
 
 /** Determine whether `arraylist` contains `value` using the comparison function.
  * @param arraylist: the arraylist

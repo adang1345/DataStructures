@@ -136,25 +136,27 @@ void *arraylist_append(arraylist_t *arraylist, const void *value) {
 	return old_end;
 }
 
-// todo handle OOM
-void arraylist_extend(arraylist_t *dest, const arraylist_t *source) {
+int64_t arraylist_extend(arraylist_t *dest, const arraylist_t *source) {
+	int64_t num_appended = 0;
 	for (int8_t *value = source->contents; value < source->end; value += source->elem_size) {
-		arraylist_append(dest, value);
+		if (arraylist_append(dest, value)) num_appended++;
+		else break;
 	}
+	return num_appended;
 }
 
-// todo handle OOM
-void arraylist_insert(arraylist_t *arraylist, int64_t index, const void *value) {
+void *arraylist_insert(arraylist_t *arraylist, int64_t index, const void *value) {
 	if (index < -arraylist->len) index = 0;
 	else if (index < 0) index += arraylist->len;
 	else if (index > arraylist->len) index = arraylist->len;
-	arraylist_grow(arraylist);
+	if (!arraylist_grow(arraylist)) return NULL;
 	memmove(ARRAYLIST_GET_UNCHECKED(arraylist, index + 1),
 		ARRAYLIST_GET_UNCHECKED(arraylist, index),
 		(size_t)(arraylist->len - index) * arraylist->elem_size);
 	memmove(ARRAYLIST_GET_UNCHECKED(arraylist, index), value, arraylist->elem_size);
 	arraylist->len++;
 	arraylist->end += arraylist->elem_size;
+	return ARRAYLIST_GET_UNCHECKED(arraylist, index);
 }
 
 bool arraylist_contains(const arraylist_t *arraylist, const void *value) {
