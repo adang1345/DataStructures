@@ -136,12 +136,14 @@ void *arraylist_append(arraylist_t *arraylist, const void *value) {
 	return old_end;
 }
 
+// todo handle OOM
 void arraylist_extend(arraylist_t *dest, const arraylist_t *source) {
 	for (int8_t *value = source->contents; value < source->end; value += source->elem_size) {
 		arraylist_append(dest, value);
 	}
 }
 
+// todo handle OOM
 void arraylist_insert(arraylist_t *arraylist, int64_t index, const void *value) {
 	if (index < -arraylist->len) index = 0;
 	else if (index < 0) index += arraylist->len;
@@ -270,7 +272,9 @@ static int64_t binary_search_right(const arraylist_t *arraylist, int64_t start, 
 		int64_t m = start + (end - start) / 2;
 		if (arraylist->cmp_func(ARRAYLIST_GET_UNCHECKED(arraylist, m), value) <= 0) {
 			start = m + 1;
-		} else end = m;
+		} else {
+			end = m;
+		}
 	}
 	return start;
 }

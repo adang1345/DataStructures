@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "datastructurestest", "DataS
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "datastructures_linux", "datastructures_linux\datastructures_linux.vcxproj", "{8AC83B27-EFD4-4F4B-9185-E901FA356C62}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "datastructurestest_linux", "datastructurestest_linux\datastructurestest_linux.vcxproj", "{A7FF91E1-606C-4564-80A4-EED9FA50A106}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -64,6 +66,22 @@ Global
 		{8AC83B27-EFD4-4F4B-9185-E901FA356C62}.Release|x64.Build.0 = Release|x64
 		{8AC83B27-EFD4-4F4B-9185-E901FA356C62}.Release|x86.ActiveCfg = Release|x86
 		{8AC83B27-EFD4-4F4B-9185-E901FA356C62}.Release|x86.Build.0 = Release|x86
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Debug|ARM.ActiveCfg = Debug|ARM
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Debug|ARM.Build.0 = Debug|ARM
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Debug|ARM64.Build.0 = Debug|ARM64
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Debug|x64.ActiveCfg = Debug|x64
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Debug|x64.Build.0 = Debug|x64
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Debug|x86.ActiveCfg = Debug|x86
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Debug|x86.Build.0 = Debug|x86
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Release|ARM.ActiveCfg = Release|ARM
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Release|ARM.Build.0 = Release|ARM
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Release|ARM64.ActiveCfg = Release|ARM64
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Release|ARM64.Build.0 = Release|ARM64
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Release|x64.ActiveCfg = Release|x64
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Release|x64.Build.0 = Release|x64
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Release|x86.ActiveCfg = Release|x86
+		{A7FF91E1-606C-4564-80A4-EED9FA50A106}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

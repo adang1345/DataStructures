@@ -1,7 +1,15 @@
 #include "datastructures.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
+#ifdef _WIN32
 #include <windows.h>
+#else
+#include <unistd.h>
+#include <signal.h>
+#include <execinfo.h>
+#endif
 
 #define assert_equal(a, b) \
 	do { \
@@ -35,31 +43,71 @@
 		} \
 	} while (0)
 
-#define run_test(test) \
-	__try { \
-		(test)(); \
-		printf(#test " passed\n"); \
-	} \
-	__except (EXCEPTION_EXECUTE_HANDLER) { \
-		printf("Exception Code %d occured during " #test "\n", GetExceptionCode()); \
-		exit(EXIT_FAILURE); \
-	}
+#define run_test(test) run_test_ex((test), (#test))
 
-static int64_t int_compare(const int *a, const int *b) {
-	return *a - *b;
+#ifndef _WIN32
+
+
+#define BACKTRACE_SIZE 20
+
+/** Excluding the 2 stack frames used by the signal handler, print a backtrace
+ * of the most recent BACKTRACE_SIZE calls and exit. Unfortunately, there is no
+ * way to do this in an async-signal-safe manner. However, the usefulness of
+ * getting a backtrace overrides the safety concerns of using async-signal-
+ * unsafe functions, especially since this function is used for debugging
+ * purposes only. Nevertheless, an effort has been made to minimize the number
+ * of calls to async-signal-unsafe functions. */
+void sigsegv_handler(int sig, siginfo_t *info, void *ucontext) {
+	void *array[BACKTRACE_SIZE + 2];
+	int num_frames = backtrace(array, BACKTRACE_SIZE + 2);
+	char *header = "Segmentation Fault: Backtrace\n";
+	write(STDOUT_FILENO, header, strlen(header));
+	backtrace_symbols_fd(&array[2], num_frames - 2, STDOUT_FILENO);
+	_exit(EXIT_FAILURE);
+}
+#endif
+
+/** Run the test `test` with name `test_name`. If an exception or segmentation
+ * fault happens during the test, print the error and exit. */
+void run_test_ex(void (*test)(void), char *test_name) {
+#ifdef _WIN32
+	__try {
+		test();
+		printf("%s passed\n", test_name);
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		printf("Exception Code %X occured during %s\n", GetExceptionCode(), test_name);
+		exit(EXIT_FAILURE);
+	}
+#else
+	struct sigaction act, oldact;
+	act.sa_sigaction = sigsegv_handler;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = SA_SIGINFO;
+	sigaction(SIGSEGV, &act, &oldact);
+	test();
+	sigaction(SIGSEGV, &oldact, NULL);
+	printf("%s passed\n", test_name);
+#endif
 }
 
-static int64_t double_compare(const double *a, const double *b) {
-	if (*a < *b) return -1;
-	else if (*a == *b) return 0;
+int64_t int_compare(const void *a, const void *b) {
+	return *(int *)a - *(int *)b;
+}
+
+int64_t double_compare(const void *a, const void *b) {
+	double a_double = *(double *)a;
+	double b_double = *(double *)b;
+	if (a_double < b_double) return -1;
+	else if (a_double == b_double) return 0;
 	else return 1;
 }
 
 /** Increment `value` by 1. Used to test arraylist_foreach */
-void increment(int *value) {
-	(*value)++;
+void increment(void *value) {
+	(*(int *)value)++;
 }
 
+/** Tests for arraylist and arraylist iterator. */
 void test_arraylist(void) {
 	// empty arraylist
 	int int_value = 1;
@@ -456,7 +504,6 @@ void test_arraylist(void) {
 	arraylist_iter_free(iter);
 	arraylist_free(int_arraylist5);
 }
-
 
 int main(void) {
 	run_test(test_arraylist);

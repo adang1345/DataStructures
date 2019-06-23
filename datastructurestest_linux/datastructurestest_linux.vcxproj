@@ -34,16 +34,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\Source\datastructures.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\Source\datastructures.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{8ac83b27-efd4-4f4b-9185-e901fa356c62}</ProjectGuid>
+    <ProjectGuid>{a7ff91e1-606c-4564-80a4-eed9fa50a106}</ProjectGuid>
     <Keyword>Linux</Keyword>
-    <RootNamespace>datastructures_linux</RootNamespace>
+    <RootNamespace>datastructurestest_linux</RootNamespace>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <ApplicationType>Linux</ApplicationType>
     <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
@@ -53,35 +47,27 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -89,103 +75,187 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <TargetExt>.so</TargetExt>
-    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <TargetName>libdatastructures</TargetName>
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <TargetExt>.so</TargetExt>
-    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <TargetName>libdatastructures</TargetName>
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <TargetExt>.so</TargetExt>
-    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <TargetName>libdatastructures</TargetName>
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <TargetExt>.so</TargetExt>
-    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <TargetName>libdatastructures</TargetName>
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetExt>.so</TargetExt>
-    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <TargetName>libdatastructures</TargetName>
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetExt>.so</TargetExt>
-    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <TargetName>libdatastructures</TargetName>
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <TargetExt>.so</TargetExt>
-    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <TargetName>libdatastructures</TargetName>
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <TargetExt>.so</TargetExt>
-    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <TargetName>libdatastructures</TargetName>
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
   </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Source\datastructures.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Source\datastructurestest.c" />
+  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Link>
+      <LibraryDependencies>
+      </LibraryDependencies>
+      <AdditionalDependencies>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)/libdatastructures.so</AdditionalDependencies>
+      <SharedLibrarySearchPath>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)</SharedLibrarySearchPath>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>$(RemoteTargetPath)</Command>
+    </RemotePostBuildEvent>
+    <RemotePostBuildEvent>
+      <Message>Running Linux Tests</Message>
+    </RemotePostBuildEvent>
     <ClCompile>
       <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
-    <Link />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Link>
+      <LibraryDependencies>
+      </LibraryDependencies>
+      <AdditionalDependencies>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)/libdatastructures.so</AdditionalDependencies>
+      <SharedLibrarySearchPath>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)</SharedLibrarySearchPath>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>$(RemoteTargetPath)</Command>
+    </RemotePostBuildEvent>
+    <RemotePostBuildEvent>
+      <Message>Running Linux Tests</Message>
+    </RemotePostBuildEvent>
     <ClCompile>
       <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
-    <Link />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <Link>
+      <LibraryDependencies>
+      </LibraryDependencies>
+      <AdditionalDependencies>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)/libdatastructures.so</AdditionalDependencies>
+      <SharedLibrarySearchPath>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)</SharedLibrarySearchPath>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>$(RemoteTargetPath)</Command>
+    </RemotePostBuildEvent>
+    <RemotePostBuildEvent>
+      <Message>Running Linux Tests</Message>
+    </RemotePostBuildEvent>
     <ClCompile>
       <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
-    <Link />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <Link>
+      <LibraryDependencies>
+      </LibraryDependencies>
+      <AdditionalDependencies>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)/libdatastructures.so</AdditionalDependencies>
+      <SharedLibrarySearchPath>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)</SharedLibrarySearchPath>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>$(RemoteTargetPath)</Command>
+    </RemotePostBuildEvent>
+    <RemotePostBuildEvent>
+      <Message>Running Linux Tests</Message>
+    </RemotePostBuildEvent>
     <ClCompile>
       <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
-    <Link />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <CLanguageStandard>gnu11</CLanguageStandard>
-    </ClCompile>
-    <Link />
     <Link>
+      <LibraryDependencies>
+      </LibraryDependencies>
+      <AdditionalDependencies>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)/libdatastructures.so</AdditionalDependencies>
+      <SharedLibrarySearchPath>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)</SharedLibrarySearchPath>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>-rdynamic %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <RemotePostBuildEvent>
+      <Command>$(RemoteTargetPath)</Command>
+    </RemotePostBuildEvent>
+    <RemotePostBuildEvent>
+      <Message>Running Linux Tests</Message>
+    </RemotePostBuildEvent>
+    <ClCompile>
+      <CLanguageStandard>gnu11</CLanguageStandard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <LibraryDependencies>
+      </LibraryDependencies>
+      <AdditionalDependencies>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)/libdatastructures.so</AdditionalDependencies>
+      <SharedLibrarySearchPath>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)</SharedLibrarySearchPath>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>$(RemoteTargetPath)</Command>
+    </RemotePostBuildEvent>
+    <RemotePostBuildEvent>
+      <Message>Running Linux Tests</Message>
+    </RemotePostBuildEvent>
     <ClCompile>
       <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
-    <Link />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <Link>
+      <LibraryDependencies>
+      </LibraryDependencies>
+      <AdditionalDependencies>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)/libdatastructures.so</AdditionalDependencies>
+      <SharedLibrarySearchPath>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)</SharedLibrarySearchPath>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>$(RemoteTargetPath)</Command>
+    </RemotePostBuildEvent>
+    <RemotePostBuildEvent>
+      <Message>Running Linux Tests</Message>
+    </RemotePostBuildEvent>
     <ClCompile>
       <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
-    <Link />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <Link>
+      <LibraryDependencies>
+      </LibraryDependencies>
+      <AdditionalDependencies>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)/libdatastructures.so</AdditionalDependencies>
+      <SharedLibrarySearchPath>$(RemoteRootDir)/datastructures_linux/bin/$(Platform)/$(Configuration)</SharedLibrarySearchPath>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>$(RemoteTargetPath)</Command>
+    </RemotePostBuildEvent>
+    <RemotePostBuildEvent>
+      <Message>Running Linux Tests</Message>
+    </RemotePostBuildEvent>
     <ClCompile>
       <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
-    <Link />
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
